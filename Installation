@@ -1,86 +1,311 @@
-First Create 2 instances
-Sonarqube-ec2(Configuration) 
+First Create 2 instances (SonarQube & Jenkins) (All Traffic)
+
+In SonarQube-ec2 installations - 
 
 sudo apt update 
 sudo apt upgrade -y 
-sudo apt install -y 
-openjdk-17-jdk 
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" /etc/apt/sources.list.d/pgdg.list' wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | sudo apt-key add - 
+sudo apt install -y openjdk-21-jdk 
+java --version
+
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" 
+/etc/apt/sources.list.d/pgdg.list' 
+
+sudo wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | sudo apt-key add - 
+
 sudo apt install postgresql postgresql-contrib -y 
+
 sudo systemctl enable postgresql 
 sudo systemctl start postgresql 
-sudo systemctl status postgresql psql --version 
-sudo -i -u postgres createuser ddsonar 
+sudo systemctl status postgresql 
+
+psql --version 
+
+sudo -i -u postgres 
+
+createuser ddsonar 
+
 psql 
+
 ALTER USER ddsonar WITH ENCRYPTED password 'user'; 
 CREATE DATABASE ddsonarqube OWNER ddsonar; 
-GRANT ALL PRIVILEGES ON DATABASE ddsonarqube to ddsonar; 
+GRANT ALL PRIVILEGES ON DATABASE ddsonarqube TO ddsonar; 
 \l
 \du
 \q
 exit 
-sudo apt install zip -y https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-26.2.0.119303.zip 
-sudo unzip file.zip 
-sudo mv file sonarqube 
+sudo apt install zip -y 
+sudo wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-26.2.0.119303.zip 
+sudo unzip sonarqube-26.2.0.119303.zip 
+sudo mv sonarqube-26.2.0.119303 sonarqube 
 sudo mv sonarqube /opt/ 
 sudo groupadd ddsonar 
 sudo useradd -d /opt/sonarqube -g ddsonar ddsonar 
 sudo chown ddsonar:ddsonar /opt/sonarqube -R 
-sudo nano /opt/sonarqube/conf/sonar.properties #under DATABASE user credentials sonar.jdbc.username=ddsonar sonar.jdbc.password=balaji sonar.jdbc.url=jdbc:postgresql://localhost:5432/ddsonarqube Ctrl+x,y,enter sudo nano /opt/sonarqube/bin/linux-x86-64/sonar.sh -> RUN_AS_USER=ddsonar sudo nano /etc/systemd/system/sonar.service -> [Unit] Description=SonarQube service After=syslog.target network.target
-[Service] Type=forking ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop User=ddsonar Group=ddsonar Restart=always LimitNOFILE=65536 LimitNPROC=4096 [Install] WantedBy=multi-user.target
-sudo systemctl enable sonar sudo systemctl start sonar sudo systemctl status sonar
--> If error change java version sudo apt install -y openjdk-21-jdk sudo systemctl restart sonar
-sudo nano /etc/sysctl.conf -> vm.max_map_count=262144 fs.file-max=65536 ulimit -n 65536 ulimit -u 4096
+
+sudo nano /opt/sonarqube/conf/sonar.properties 
+
+#under DATABASE user credentials 
+
+sonar.jdbc.username=ddsonar 
+sonar.jdbc.password=user 
+sonar.jdbc.url=jdbc:postgresql://localhost:5432/ddsonarqube 
+
+(Remove all # for these 3 commands)
+Then click "Ctrl + x" , "y" , "Enter" 
+
+sudo nano /opt/sonarqube/bin/linux-x86-64/sonar.sh 
+RUN_AS_USER=ddsonar 
+
+sudo nano /etc/systemd/system/sonar.service 
+
+[Unit] 
+Description=SonarQube service 
+After=syslog.target network.target
+[Service] 
+Type=forking 
+ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start 
+ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop 
+User=ddsonar 
+Group=ddsonar 
+Restart=always 
+LimitNOFILE=65536 
+LimitNPROC=4096 
+[Install] 
+WantedBy=multi-user.target
+
+sudo systemctl enable sonar 
+sudo systemctl start sonar 
+sudo systemctl status sonar
+
+Enable Sonar Service 
+sudo systemctl enable sonar
+
+Start SonarQube
+sudo systemctl start sonar 
+
+Check Status
+sudo systemctl status sonar 
+
+Edit sysctl Configuration 
+sudo nano /etc/sysctl.conf
+
+vm.max_map_count=262144 
+fs.file-max=65536
+ulimit -n 65536 
+ulimit -u 4096
+
+• Reboot System
+sudo reboot
+
+Open new tab -> Pasted IP Address in new tab -> 9000 is port number of SonarQube (:9000)
+
+In Sonar Qube Webpage ->
+Username - admin
+Password - admin
+
+Click -> Administration -> Security -> Users -> Click three dotes below Tokens (To generate token) -> Enter token name as "sonar-token" -> Copy and save the below Code on notepad
+
 Inside sonarqube
 First ->
 Quality Gate -> create
 Edit coverage -> 70
 
 
-
-Administration → Security → USer →
 Now jenkins-ec2(server)
-→sudo apt update-y →sudo apt install fontconfig openjdk-21-jre →sudo apt update -y →sudo apt install maven -y →sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \ https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key →echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc]" \ https://pkg.jenkins.io/debian-stable binary/ | sudo tee \ /etc/apt/sources.list.d/jenkins.list > /dev/null →sudo apt update →sudo apt install jenkins →cat /var/lib/jenkins/secrets/initialAdminPassword
-Extended email notification
+
+sudo apt update-y 
+sudo apt install fontconfig openjdk-21-jre 
+sudo apt update -y 
+sudo apt install maven -y 
+sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \ https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key 
+
+echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+sudo apt update 
+sudo apt install jenkins 
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+In Jenkins Webpage -> Setting -> Plugins -> Search "SonarQube Scanner" -> Install it
+
+Settings -> Tools -> + Add Maven -> Name - Maven -> Install Automatically -> Apply and Save it
+
+Settings -> Credentials -> Global -> Click Secret Text ->  Scope - Global (Jenkins, nodes.....) -> Secret - Add the sonarqube token we copied on notepad earlier -> ID - SonarQube -> Description - SonarQube -> Create
+
+Settings -> System -> SonarQube Installations -> Name - SonarQube (Add secret Text Id as a name) -> Server URL - Add Sonar Server EC2 public id with port number 9000 -> Server auth token - In Dropdown click SonarQube
 
 
+Jenkins -> New Item -> Item Name - EcommerceApp -> pipeline -> ok 
 
+General -> Description - This is Ecommerce Project -> Click "Github Project" -> Project URL - https://github.com/Msocial123/EcommerceApp.git  
 
+Triggers -> Poll SCM -> Schedule - "....." (Use five dots only) 
 
-Come to jenkins server
-sudo wget https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.89/bin/apache-tomcat-9.0.89.tar.gz
-sudo tar -xvzf apache-tomcat-9.0.89.tar.gz
-Sudo mv apache-tomcat-9.0.89 tomcat9
-cd tomcat9
-Sudo chown -R ubuntu:ubuntu ~/tomcat9
+Pipeline script -> Add the below pipeline code -> Cick on Apply and Save 
+
+Pipeline script -
+-----------------------------------------------------------------------------------------------
+
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven'
+    }
+
+    stages {
+
+        stage('Clone Repository') {
+            steps {
+                git branch: 'master',
+                    url: 'https://github.com/Msocial123/EcommerceApp.git'
+            }
+        }
+
+        stage('Check Project Structure') {
+            steps {
+                sh 'ls -la'
+            }
+        }
+
+        stage('Compile') {
+            steps {
+                dir('EcommerceApp') {
+                    sh 'mvn clean compile'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('EcommerceApp') {
+                    sh 'mvn test'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                dir('EcommerceApp') {
+                    withSonarQubeEnv('sonarqube') {
+                        sh 'mvn sonar:sonar'
+                    }
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                dir('EcommerceApp') {
+                    sh 'mvn package'
+                }
+            }
+        }
+
+        stage('Deploy to Tomcat') {
+            steps {
+                dir('EcommerceApp') {
+                    sh 'sudo cp target/EcommerceApp.war /home/ubuntu/tomcat9/webapps/'
+                }
+            }
+        }
+    }
+
+    post {
+
+        success {
+            emailext(
+                to: 'your-email@gmail.com',
+                subject: "SUCCESS: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
+                body: """
+Build succeeded ✅
+
+Job Name: ${env.JOB_NAME}
+Build Number: ${env.BUILD_NUMBER}
+Build URL: ${env.BUILD_URL}
+
+The application has been successfully built and deployed.
+"""
+            )
+        }
+
+        failure {
+            emailext(
+                to: 'your-email@gmail.com',
+                subject: "FAILED: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
+                body: """
+Build failed ❌
+
+Job Name: ${env.JOB_NAME}
+Build Number: ${env.BUILD_NUMBER}
+Build URL: ${env.BUILD_URL}
+
+Please check the console output for error details.
+"""
+            )
+        }
+    }
+}
+
+-----------------------------------------------------------------------------------------------
+
+Email Configuration -
+
+Setting -> Click on Manage Jenkins -> System -> E-mail Notification -> SMTP Server - smtp.gmail.com -> Default - @gmail.com -> Advanced -> User Name - msuman2003711@gmail.com (use your email-id) -> For Password - Need Google App password
+
+Go to Your Mail-ID -> Manage your Google Account -> Security & Sign-in -> Search - App Passwords -> Also Turn on 2-step verification -> App Name - Jenkins -> Copy the Generated app password without spaces
+
+Now add that saved password key on Jenkins without space -> Tick - Use SSL -> SMTP Port - 465 -> Charset - UTF-8 -> Tick - Test configuration by sending test e-mail - "msuman2003711@gmail.com" (your mail-id)
+
+Scroll up and Find -> Extended E-Mail Notification -> SMTP server - smtp.gmail.com -> SMTP Port - 465 -> Advanced -> Add - Use OAuthen 2.0 -> Username with password ->
+
+Scope - Global(Jenkins,nod...) -> Username - msuman2003711@gmail.com -> pw - Add google pass key which you have generated -> ID - Email -> Descp - Email -> Create
+
+Click on checkbox - Use SSL -> Apply and Save it
+
+Default user e-mail - msuman2003711@gmail.com (Set ur email-id) -> Default Content Type - HTML -> Apply and save it
+
+Apache Tomcat Installation & Setup -
+
+Switch to root user - 
+sudo su
+
+Updates package list - 
+apt update -y
+
+Downloads Tomcat server - 
+wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.115/bin/apache-tomcat-9.0.115.zip
+(Get the tomcat installation zip from that website - https://tomcat.apache.org/download-90.cgi)
+
+Extracts compressed file - 
+unzip apache-tomcat-9.0.115.zip
+
+Moves into Tomcat installation folder -
+cd apache-tomcat-9.0.115
+
+Edit server configuration file - 
 cd conf
 vi server.xml
-Change the port 8080 to 9090
-Cd ..
+
+Moves into binary folder - 
+cd .. 
 cd bin
+
+Makes shell scripts executable - 
 chmod +x *.sh
+
+Starts Tomcat server -
 ./startup.sh
-sudo visudo
-Pipeline script
-pipeline { agent any
-tools { maven 'Maven' }
-stages {
-stage('Clone Repository') { steps { git branch: 'master', url: 'https://github.com/Msocial123/EcommerceApp.git' } }
-stage('Check Project Structure') { steps { sh 'ls -la' } }
-stage('Compile') { steps { dir('EcommerceApp') { sh 'mvn clean compile' } } }
-stage('Test') { steps { dir('EcommerceApp') { sh 'mvn test' } } }
-stage('SonarQube Analysis') { steps { dir('EcommerceApp') { withSonarQubeEnv('sonarqube') { sh 'mvn sonar:sonar' } } } }
-stage('Package') { steps { dir('EcommerceApp') { sh 'mvn package'
-} } }
-stage('Deploy to Tomcat') { steps { dir('EcommerceApp') { sh 'sudo cp target/EcommerceApp.war /home/ubuntu/tomcat9/webapps/' } } } }
-post { success { emailext( to: 'your-email@gmail.com', subject: "SUCCESS: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}", body: """ Build succeeded ✅
-Job Name: ${env.JOB_NAME} Build Number: ${env.BUILD_NUMBER} Build URL: ${env.BUILD_URL}
-The application has been successfully built and deployed. """ ) }
-failure { emailext( to: 'your-email@gmail.com', subject: "FAILED: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}", body: """ Build failed ❌
-Job Name: ${env.JOB_NAME} Build Number: ${env.BUILD_NUMBER} Build URL: ${env.BUILD_URL}
-Please check the console output for error details. """ ) } } }
-Additional:
-stage('Download Sonar Report') { steps { sh """ curl -u ${SONAR_TOKEN}: \ http://<SONARQUBE_PUBLIC_IP>:9000/api/issues/search?projectKeys=${SONAR_PROJECT_KEY} \ -o sonar-report.json """ } }
-# stage('Push Report to GitHub') { steps { sh """ git config user.email "jenkins@ci.com" git config user.name "Jenkins" git add sonar-report.json git commit -m "SonarQube Report - Build ${BUILD_NUMBER}" || echo "No changes to commit" git push origin master """ } }
-Replace your ids in download sonar report
-curl -u 1a2b3c4d5e6f7g8h9i0j: \ "http://13.235.xxx.xxx:9000/api/issues/search?projectKeys=EcommerceApp
+
+Deploy applications - 
+cd ..
+cd webapps
+
+Go to Jenkins -> Check the pipeline code once in Jenkins -> Click BUILD NOW -> In Stages everything must be tick and all should run
+
+In SonarQube the Ecommerce Maven WebApp must run 
+
+Check your Mail for the confirmation process
+
+
+
+
