@@ -288,7 +288,7 @@ Please check the console output for error details.
 
 Email Configuration -
 
-Setting -> Click on Manage Jenkins -> System -> E-mail Notification -> SMTP Server - smtp.gmail.com -> Default - @gmail.com -> Advanced -> User Name - msuman2003711@gmail.com (use your email-id) -> For Password - Need Google App password
+Setting -> Click on Manage Jenkins -> System -> E-mail Notification -> SMTP Server - smtp.gmail.com -> Default - @gmail.com -> Advanced -> Use SMTP Authentication -> User Name - msuman2003711@gmail.com (use your email-id) -> For Password - Need Google App password
 
 Go to Your Mail-ID -> Manage your Google Account -> Security & Sign-in -> Search - App Passwords -> Also Turn on 2-step verification -> App Name - Jenkins -> Copy the Generated app password without spaces
 
