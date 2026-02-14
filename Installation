@@ -298,9 +298,7 @@ Scroll up and Find -> Extended E-Mail Notification -> SMTP server - smtp.gmail.c
 
 Scope - Global(Jenkins,nod...) -> Username - msuman2003711@gmail.com -> pw - Add google pass key which you have generated -> ID - Email -> Descp - Email -> Create
 
-Click on checkbox - Use SSL -> Apply and Save it
-
-Default user e-mail - msuman2003711@gmail.com (Set ur email-id) -> Default Content Type - HTML -> Apply and save it
+Click on checkbox - Use SSL -> Below -> Default user e-mail suffix - @gmail.com -> Default Content Type - HTML -> Apply and save it
 
 ### Apache Tomcat Installation & Setup ###
 
