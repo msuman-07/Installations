@@ -28,7 +28,7 @@ psql
 
 ALTER USER ddsonar WITH ENCRYPTED password 'user'; 
 CREATE DATABASE ddsonarqube OWNER ddsonar; 
-GRANT ALL PRIVILEGES ON DATABASE ddsonarqube TO ddsonar; 
+GRANT ALL PRIVILEGES ON DATABASE ddsonarqube to ddsonar; 
 \l
 \du
 \q
