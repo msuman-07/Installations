@@ -53,7 +53,7 @@ sonar.jdbc.url=jdbc:postgresql://localhost:5432/ddsonarqube
 (Remove all # for these 3 commands)
 Then click "Ctrl + x" , "y" , "Enter" 
 
-sudo nano /opt/sonarqube/bin/linux-x86-64/sonar.sh 
+sudo nano /opt/sonarqube/bin/linux-x86-64/sonar.sh (In end type the below command)
 RUN_AS_USER=ddsonar 
 
 sudo nano /etc/systemd/system/sonar.service 
