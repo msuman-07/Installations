@@ -54,10 +54,18 @@ sonar.jdbc.url=jdbc:postgresql://localhost:5432/ddsonarqube
 (Remove all # for these 3 commands)
 Then click "Ctrl + x" , "y" , "Enter" 
 
-sudo nano /opt/sonarqube/bin/linux-x86-64/sonar.sh (In end type the below command)
+
+sudo nano /opt/sonarqube/bin/linux-x86-64/sonar.sh
+
+(type the below command at the end of the nano)
 RUN_AS_USER=ddsonar 
 
+Then click "Ctrl + x" , "y" , "Enter"
+
 sudo nano /etc/systemd/system/sonar.service 
+
+Copy and paste the below commands inside it - 
+
 
 [Unit] 
 Description=SonarQube service 
@@ -74,21 +82,29 @@ LimitNPROC=4096
 [Install] 
 WantedBy=multi-user.target
 
+
+Then click "Ctrl + x" , "y" , "Enter"
+
 sudo systemctl enable sonar
 sudo systemctl start sonar 
 sudo systemctl status sonar 
 
-(If error only then change java version) 
+###(If error only then change java version and restart or else continue below)  
 sudo apt install -y openjdk-21-jdk 
 sudo systemctl restart sonar
 
-Edit sysctl Configuration 
+Continue -
+
 sudo nano /etc/sysctl.conf
+
+(Copy & Paste the below commands at the end of the nano)
 
 vm.max_map_count=262144 
 fs.file-max=65536
 ulimit -n 65536 
 ulimit -u 4096
+
+Then click "Ctrl + x" , "y" , "Enter"
 
 • Reboot System
 sudo reboot
@@ -100,19 +116,18 @@ Username - admin
 Password - admin
 
 
-Inside sonarqube
-First ->
-Quality Gate -> create
-Edit coverage -> 70
+Inside sonarqube webpage - 
 
-Quality Gates -> Create -> Create Quality Gate Name - gate -> create -> 
+Quality Gates -> Create -> Create Quality Gate Name - gate -> Create 
 
-Add Condition -> On New Code -> Qlty Gate fails when -> Block -> Block Severity Issues -> Opr - is greater than -> value - 0
+Delete -> Security Hotspots Reviewed
+
+Add Condition -> On New Code -> Qlty Gate fails when -> Block -> In Drop down Type - "Block Severity Issues" -> Opr - is greater than -> value - 0
 
 Conditions 
 
 Issues - is greater than - 0
-Coverage - is less than - 0
+Coverage - is less than - 70.0%
 Duplicated Lines - is greater than - 3.0% 
 Block Severity Issues - is greater than - 0
 
