@@ -305,7 +305,7 @@ Click on checkbox - Use SSL -> Below -> Default user e-mail suffix - @gmail.com 
 sudo su
 
 Downloads Tomcat server - 
-wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.115/bin/apache-tomcat-9.0.115.zip
+sudo wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.115/bin/apache-tomcat-9.0.115.zip
 (Get the tomcat installation zip from that website - https://tomcat.apache.org/download-90.cgi)
 
 Extracts compressed file - 
