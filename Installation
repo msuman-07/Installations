@@ -73,18 +73,13 @@ LimitNPROC=4096
 [Install] 
 WantedBy=multi-user.target
 
-sudo systemctl enable sonar 
-sudo systemctl start sonar 
-sudo systemctl status sonar
-
-Enable Sonar Service 
 sudo systemctl enable sonar
-
-Start SonarQube
 sudo systemctl start sonar 
-
-Check Status
 sudo systemctl status sonar 
+
+(If error only then change java version) 
+sudo apt install -y openjdk-21-jdk 
+sudo systemctl restart sonar
 
 Edit sysctl Configuration 
 sudo nano /etc/sysctl.conf
@@ -103,36 +98,59 @@ In Sonar Qube Webpage ->
 Username - admin
 Password - admin
 
-Click -> Administration -> Security -> Users -> Click three dotes below Tokens (To generate token) -> Enter token name as "sonar-token" -> Copy and save the below Code on notepad
 
 Inside sonarqube
 First ->
 Quality Gate -> create
 Edit coverage -> 70
 
+Quality Gates -> Create -> Create Quality Gate Name - gate -> create -> 
+
+Add Condition -> On New Code -> Qlty Gate fails when -> Block -> Block Severity Issues -> Opr - is greater than -> value - 0
+
+Conditions 
+
+Issues - is greater than - 0
+Coverage - is less than - 0
+Duplicated Lines - is greater than - 3.0% 
+Block Severity Issues - is greater than - 0
+
+Homepage -> Click Administration -> Security -> Users -> Click three dotes below Tokens (To generate token) -> Enter token name as "sonar-token" -> Generate -> Copy and save the below Code on notepad
 
 Now jenkins-ec2(server)
 
-sudo apt update-y 
-sudo apt install fontconfig openjdk-21-jre 
 sudo apt update -y 
+
+sudo apt install -y fontconfig openjdk-21-jre 
+
 sudo apt install maven -y 
-sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \ https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key 
+
+sudo mkdir -p /etc/apt/keyrings
+
+sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
 
 echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
 
 sudo apt update 
-sudo apt install jenkins 
+
+sudo apt install -y jenkins
+
+sudo systemctl status jenkins
+
 sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 
 In Jenkins Webpage -> Setting -> Plugins -> Search "SonarQube Scanner" -> Install it
 
-Settings -> Tools -> + Add Maven -> Name - Maven -> Install Automatically -> Apply and Save it
+Install Plugins - 
+SonarQube Scanner for Jenkins
+Email Extension Plugin
+Maven Integration Plugin
+
+Settings -> Tools -> + Add Maven Installations -> Name - Maven -> Install Automatically -> Apply and Save it
 
 Settings -> Credentials -> Global -> Click Secret Text ->  Scope - Global (Jenkins, nodes.....) -> Secret - Add the sonarqube token we copied on notepad earlier -> ID - SonarQube -> Description - SonarQube -> Create
 
 Settings -> System -> SonarQube Installations -> Name - SonarQube (Add secret Text Id as a name) -> Server URL - Add Sonar Server EC2 public id with port number 9000 -> Server auth token - In Dropdown click SonarQube
-
 
 Jenkins -> New Item -> Item Name - EcommerceApp -> pipeline -> ok 
 
@@ -264,13 +282,13 @@ Click on checkbox - Use SSL -> Apply and Save it
 
 Default user e-mail - msuman2003711@gmail.com (Set ur email-id) -> Default Content Type - HTML -> Apply and save it
 
-Apache Tomcat Installation & Setup -
+### Apache Tomcat Installation & Setup ###
 
-Switch to root user - 
 sudo su
 
-Updates package list - 
 apt update -y
+
+apt install unzip openjdk-21-jdk -y
 
 Downloads Tomcat server - 
 wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.115/bin/apache-tomcat-9.0.115.zip
@@ -286,6 +304,11 @@ Edit server configuration file -
 cd conf
 vi server.xml
 
+Change:
+
+8080 → 9090
+Save → ESC :wq
+
 Moves into binary folder - 
 cd .. 
 cd bin
@@ -299,6 +322,9 @@ Starts Tomcat server -
 Deploy applications - 
 cd ..
 cd webapps
+
+Access Tomcat
+http://"server-ip":9090
 
 Go to Jenkins -> Check the pipeline code once in Jenkins -> Click BUILD NOW -> In Stages everything must be tick and all should run
 
